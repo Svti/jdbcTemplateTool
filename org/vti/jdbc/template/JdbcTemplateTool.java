@@ -152,7 +152,7 @@ public class JdbcTemplateTool {
 	};
 	
 	private String getSelectSQL(Object object) {
-		String sql = "SELECT * FROM " + getTableName(object)+" WHERE "+getTableId(object)+"= ? LIMIT 1";
+		String sql = "SELECT * FROM " + getTableName(object)+" WHERE "+getTableId(object)+"= ? ";
 		return sql;
 	};
 	
