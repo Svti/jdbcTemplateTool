@@ -129,7 +129,7 @@ public class JdbcTemplateTool {
 	public <T> List<T> list(String sql, Object[] params, Class<T> clazz) {
 		List<T> list = null;
 		if (params == null || params.length == 0) {
-			list = list(sql, params, clazz);
+			list = list(sql,clazz);
 		} else {
 			list = jdbcTemplate.query(sql, params,new BeanPropertyRowMapper<T>(clazz));
 		}
