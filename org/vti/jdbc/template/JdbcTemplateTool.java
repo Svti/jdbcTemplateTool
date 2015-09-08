@@ -12,12 +12,18 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
+import com.kdx.core.enums.Status;
+
 public class JdbcTemplateTool {
 
+	private static Log logger = LogFactory.getLog(JdbcTemplateTool.class);
+	
 	public JdbcTemplate jdbcTemplate;
 
 	public JdbcTemplate getJdbcTemplate() {
@@ -28,14 +34,27 @@ public class JdbcTemplateTool {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
+	@SuppressWarnings("unchecked")
 	public int save(Object object) {
+			
+		SimpleJdbcInsert simpleJdbcInsert=new SimpleJdbcInsert(jdbcTemplate);
+		simpleJdbcInsert.withTableName(getTableName(object));
+		Map<String, Object> map = null;
+		
 		try {
-			
-			SimpleJdbcInsert simpleJdbcInsert=new SimpleJdbcInsert(jdbcTemplate);
-			simpleJdbcInsert.withTableName(getTableName(object));
-			@SuppressWarnings("unchecked")
-			Map<String, Object> map = PropertyUtils.describe(object);
-			
+			map= PropertyUtils.describe(object);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			logger.error(e);
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			logger.error(e);
+		}catch (NoSuchMethodException e) {
+			logger.error(e);
+		}
+		
+		if (map!=null) {
+		
 			Field[] fields = object.getClass().getDeclaredFields();
 			
 			for (int i = 0; i < fields.length; i++) {
@@ -53,7 +72,7 @@ public class JdbcTemplateTool {
 					
 					map.remove(fields[i].getName());
 					map.put(column.name(), value);
-				
+					
 				}else {
 					continue;
 				}
@@ -61,8 +80,8 @@ public class JdbcTemplateTool {
 			
 			simpleJdbcInsert.compile();
 			return simpleJdbcInsert.execute(map);
-		} catch (IllegalAccessException | InvocationTargetException| NoSuchMethodException e) {
-			e.printStackTrace();
+			
+		}else {
 			return 0;
 		}
 	};
@@ -98,7 +117,8 @@ public class JdbcTemplateTool {
 			}else {
 				return null;
 			}
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (Exception e) {
+			logger.error(e);
 			e.printStackTrace();
 			return null;
 		}
@@ -152,7 +172,7 @@ public class JdbcTemplateTool {
 	};
 	
 	private String getSelectSQL(Object object) {
-		String sql = "SELECT * FROM " + getTableName(object)+" WHERE "+getTableId(object)+"= ? ";
+		String sql = "SELECT * FROM " + getTableName(object)+" WHERE status = "+Status.NORMAL.value()+" AND "+getTableId(object)+"= ? ";
 		return sql;
 	};
 	
@@ -216,9 +236,8 @@ public class JdbcTemplateTool {
 					Method method=object.getClass().getMethod("get"+fname);
 					vobj= method.invoke(object);
 					break;
-				} catch (NoSuchMethodException | SecurityException
-						| IllegalAccessException | IllegalArgumentException
-						| InvocationTargetException e) {
+				} catch (Exception e) {
+					logger.error(e);
 					e.printStackTrace();
 					break;
 				}
@@ -235,3 +254,4 @@ public class JdbcTemplateTool {
 	};
 	
 }
+
