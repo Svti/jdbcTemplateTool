@@ -172,7 +172,7 @@ public class JdbcTemplateTool {
 	};
 	
 	private String getSelectSQL(Object object) {
-		String sql = "SELECT * FROM " + getTableName(object)+" WHERE status = "+Status.NORMAL.value()+" AND "+getTableId(object)+"= ? ";
+		String sql = "SELECT * FROM " + getTableName(object)+" WHERE " +getTableId(object)+"= ? ";
 		return sql;
 	};
 	
