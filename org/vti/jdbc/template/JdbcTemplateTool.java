@@ -154,7 +154,22 @@ public class JdbcTemplateTool {
 		}
 		return list;
 	};
+	
+	public <T> List<T> listSingle(String sql, Class<T> clazz) {
+		List<T> list = jdbcTemplate.query(sql, new SingleColumnRowMapper<T>(clazz));
+		return list;
+	};
 
+	public <T> List<T> listSingle(String sql, Object[] params, Class<T> clazz) {
+		List<T> list = null;
+		if (params == null || params.length == 0) {
+			list = list(sql, clazz);
+		} else {
+			list = jdbcTemplate.query(sql, params, new SingleColumnRowMapper<T>(clazz));
+		}
+		return list;
+	};
+	
 	public long count(String sql) {
 		long count = jdbcTemplate.queryForObject(sql, Long.class);
 		return count;
